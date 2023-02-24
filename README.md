@@ -2,6 +2,10 @@
 
 The purpose of the project is to delay the processing of requests that cannot be handled immediately (e.g. requests from a previous user that are still being processed)
 So, RabbitMQ will retry sending the message after 30 seconds 
+Messages sent out by RabbitMQ will be processed in parallel by consumers to avoid duplication. 
+A distributed lock from Redis is used to achieve this.
+
+
 The content used is a distributed lock from Redis + dead letter message from RabbitMQ.
 
 # 參考資料
