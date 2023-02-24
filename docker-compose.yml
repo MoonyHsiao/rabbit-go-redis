@@ -1,0 +1,50 @@
+version: "3"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  redis:
+    image: redis:5
+    restart: always
+    tmpfs:
+      - /var/lib/redis
+    ports:
+      - "6380:6379"
+
+  producer:
+    build: ./producer/.
+    depends_on:
+      - rabbitmq
+      - redis
+    environment:
+      BOT_API_PORT: :18086
+      BOT_API_BASEURL: /api
+      REDIS_URL: redis:6379
+      REDIS_PASSWORD: 
+      REDIS_DB: 5
+      REDIS_POOLSIZE: 2
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    ports:
+      - "18086:18086"
+    restart: always
+
+  consumer:
+    build: ./consumer/.
+    depends_on:
+      - rabbitmq
+      - redis
+    environment:
+      BOT_API_PORT: :18086
+      BOT_API_BASEURL: /api
+      REDIS_URL: redis:6379
+      REDIS_PASSWORD: 
+      REDIS_DB: 5
+      REDIS_POOLSIZE: 2
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    restart: always
+  
