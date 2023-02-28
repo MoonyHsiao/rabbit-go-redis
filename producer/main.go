@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/MoonyHsiao/rabbit-go-redis/constant"
@@ -70,6 +72,7 @@ func main() {
 	v1 := router.Group(viper.GetString("bot.api_baseurl"))
 	{
 		v1.POST("/NewOrder", CreateNewOrder)
+		v1.POST("/MultNewOrder", CreateMultNewOrder)
 	}
 	log.Println("http server started on" + port)
 	router.Run(port)
@@ -94,4 +97,57 @@ func CreateNewOrder(ctx *gin.Context) {
 		"Status": "SUCCESS",
 	})
 
+}
+
+func CreateMultNewOrder(ctx *gin.Context) {
+
+	var wg sync.WaitGroup
+
+	list := []int{}
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			status := callanother()
+			list = append(list, status)
+		}()
+	}
+
+	wg.Wait()
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"Status":   "SUCCESS",
+		"SendData": list,
+	})
+
+}
+
+func callanother() int {
+
+	url := "http://127.0.0.1:18086/api/NewOrder"
+	method := "POST"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return 400
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return 400
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return 400
+	}
+
+	fmt.Println(string(body))
+
+	return res.StatusCode
 }
