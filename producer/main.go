@@ -34,32 +34,32 @@ func main() {
 		"x-dead-letter-routing-key": constant.NormalRoutingKey, // 指定死信routing-key
 	})
 	if err != nil {
-		log.Fatalln("創建wait隊列失敗:", err)
+		log.Fatalln("Create wait Queue fail:", err)
 	}
 	err = mqCh.ExchangeDeclare(constant.WaitExchange, amqp.ExchangeDirect, true, false, false, false, nil)
 
 	if err != nil {
-		log.Fatalln("創建wait交換機失敗:", err)
+		log.Fatalln("Create wait Exchange fail:", err)
 	}
 	err = mqCh.QueueBind(constant.WaitQueue, constant.WaitRoutingKey, constant.WaitExchange, false, nil)
 
 	if err != nil {
-		log.Fatalln("Wait:队列、交换机、routing-key 绑定失败", err)
+		log.Fatalln("Wait:Queue、Exchange、routing-key Bind fail:", err)
 	}
 	_, err = mqCh.QueueDeclare(constant.NormalQueue, true, false, false, false, nil)
 
 	if err != nil {
-		log.Fatalln("創建Normal隊列失敗:", err)
+		log.Fatalln("Create Normal Queue fail:", err)
 	}
 	err = mqCh.ExchangeDeclare(constant.NormalExchange, amqp.ExchangeDirect, true, false, false, false, nil)
 
 	if err != nil {
-		log.Fatalln("創建Normal隊列失敗:", err)
+		log.Fatalln("Create Normal Exchange fail:", err)
 	}
 	err = mqCh.QueueBind(constant.NormalQueue, constant.NormalRoutingKey, constant.NormalExchange, false, nil)
 
 	if err != nil {
-		log.Fatalln("Normal:隊列、交換機、routing-key 綁定失敗", err)
+		log.Fatalln("Normal:Queue、Exchange、routing-key Bind fail:", err)
 	}
 
 	ctx := context.Background()
