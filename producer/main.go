@@ -17,7 +17,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var count int
 var rdb *redis.Client
 var mq *util.RabbitMQ
 
@@ -66,7 +65,7 @@ func main() {
 
 	ctx := context.Background()
 	rdb = util.NewRedisClient(ctx)
-	count = 0
+
 	port := viper.GetString("bot.api_port")
 	router := gin.Default()
 	v1 := router.Group(viper.GetString("bot.api_baseurl"))
@@ -81,7 +80,8 @@ func main() {
 func CreateNewOrder(ctx *gin.Context) {
 
 	user := util.GetRandUser()
-	message := fmt.Sprintf("%s-%v", user, count)
+	currentTime := time.Now()
+	message := fmt.Sprintf("%s-%v", user, currentTime)
 	// fmt.Println(message)
 	mqCh := mq.Channel
 	err := mqCh.Publish(constant.WaitExchange, constant.WaitRoutingKey, false, false, amqp.Publishing{
@@ -92,7 +92,6 @@ func CreateNewOrder(ctx *gin.Context) {
 	if err != nil {
 		log.Println("發布消息失敗:", err)
 	}
-	count++
 	ctx.JSON(http.StatusOK, gin.H{
 		"Status": "SUCCESS",
 	})
